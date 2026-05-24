@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Diabetes Risk Assessment{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto pb-10">
+    <div class="bg-white rounded-2xl shadow-md p-8 border border-slate-100">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-slate-800">Enter Your Health Metrics</h2>
+            <p class="text-sm text-slate-500 mt-2">Please provide accurate information for the best prediction results. All inputs must be numeric values.</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('predict') }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">1. Pregnancies</label>
+                    <input type="number" step="1" name="pregnancies" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="Number of pregnancies (e.g. 0)">
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">2. Glucose Level</label>
+                    <input type="number" step="any" name="glucose" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="Plasma glucose conc. (e.g. 120)">
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">3. Blood Pressure</label>
+                    <input type="number" step="any" name="blood_pressure" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="Diastolic blood pressure (mm Hg)">
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">4. Skin Thickness</label>
+                    <input type="number" step="any" name="skin_thickness" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="Triceps skin fold thickness (mm)">
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">5. Insulin</label>
+                    <input type="number" step="any" name="insulin" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="2-Hour serum insulin (mu U/ml)">
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">6. BMI (Body Mass Index)</label>
+                    <input type="number" step="any" name="bmi" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="Weight in kg / (height in m)^2">
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">7. Diabetes Pedigree Function</label>
+                    <input type="number" step="any" name="diabetes_pedigree" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="Risk based on family history (e.g. 0.5)">
+                </div>
+
+                <div class="space-y-2 group">
+                    <label class="block text-sm font-medium text-slate-700">8. Age</label>
+                    <input type="number" step="1" name="age" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition bg-slate-50 focus:bg-white group-hover:border-slate-300" placeholder="Age in years">
+                </div>
+
+            </div>
+            
+            <div class="mt-10 flex border-t border-slate-100 pt-8 items-center justify-between">
+                <button type="reset" class="px-6 py-3 text-slate-500 hover:text-slate-800 font-medium transition">
+                    Clear form
+                </button>
+                <button type="submit" class="px-10 py-4 bg-primary text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-primary/40 hover:-translate-y-1 transition duration-200 flex items-center space-x-2">
+                    <span>Analyze Data</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}User Management{% endblock %}
+{% block header_title %}User Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+    .search-box {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        width: 300px;
+        font-size: 0.9rem;
+    }
+    .search-box:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="toolbar">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search users by name..." onkeyup="filterUsers()">
+    </div>
+    
+    <div class="table-responsive">
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Join Date</th>
+                    <th>Predictions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td>
+                        <span class="badge {% if u.admin_role == 'superadmin' %}badge-danger{% elif u.admin_role == 'viewer' %}badge-primary{% else %}badge-success{% endif %}">
+                            {{ u.admin_role|capitalize }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if u.status == 'active' %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-danger">Suspended</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.join_date.strftime('%Y-%m-%d') if u.join_date else 'N/A' }}</td>
+                    <td>{{ u.predictions | length }}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            {% if current_user.admin_role == 'superadmin' and u.id != current_user.id %}
+                            <form action="{{ url_for('toggle_user_status', user_id=u.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-sm {% if u.status == 'active' %}btn-danger{% else %}btn-primary{% endif %}">
+                                    {% if u.status == 'active' %}Suspend{% else %}Activate{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterUsers() {
+        let input = document.getElementById('searchInput');
+        let filter = input.value.toUpperCase();
+        let table = document.getElementById('usersTable');
+        let tr = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < tr.length; i++) {
+            let td = tr[i].getElementsByTagName('td')[1]; // Username column
+            if (td) {
+                let txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

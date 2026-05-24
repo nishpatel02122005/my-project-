@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction System</title>
+    <!-- Tailwind CSS (CDN) For beautiful styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#4F46E5', // Indigo 600
+                        secondary: '#10B981', // Emerald 500
+                        dark: '#1e293b' // Slate 800
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .animate-fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .sidebar { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+    
+    <!-- Sidebar 20% -->
+    <aside class="w-1/5 bg-dark text-white flex flex-col shadow-2xl sidebar">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                DiaPredict
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">Smart Healthcare AI</p>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-2 mt-4">
+            <a href="{{ url_for('index') }}" class="block px-4 py-3 rounded-lg hover:bg-slate-700 transition duration-200 {% if request.endpoint == 'index' %}bg-primary{% endif %}">
+                Home
+            </a>
+            
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('predict') }}" class="block px-4 py-3 rounded-lg hover:bg-slate-700 transition duration-200 {% if request.endpoint == 'predict' %}bg-primary{% endif %}">
+                    Predict Diabetes
+                </a>
+                
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_dashboard') }}" class="block px-4 py-3 rounded-lg hover:bg-slate-700 transition duration-200 text-emerald-400 {% if request.endpoint == 'admin_dashboard' %}bg-primary text-white{% endif %}">
+                    Admin Dashboard
+                </a>
+                {% endif %}
+            {% endif %}
+        </nav>
+        
+        <div class="p-4 border-t border-slate-700">
+            {% if current_user.is_authenticated %}
+                <div class="mb-4 text-sm px-2">
+                    Welcome, <span class="font-bold text-blue-300">{{ current_user.username }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="block w-full text-center px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500 hover:text-white transition duration-200">
+                    Logout
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="block w-full text-center px-4 py-2 bg-primary rounded-lg hover:bg-indigo-500 transition duration-200 mb-2">
+                    Login
+                </a>
+                <a href="{{ url_for('register') }}" class="block w-full text-center px-4 py-2 border border-slate-600 rounded-lg hover:bg-slate-700 transition duration-200">
+                    Register
+                </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- Content 80% -->
+    <main class="w-4/5 h-full overflow-y-auto bg-slate-50">
+        
+        <!-- Navbar top -->
+        <div class="h-16 glass sticky top-0 z-10 flex items-center justify-between px-8 shadow-sm">
+            <div class="text-xl font-medium text-slate-700">
+                {% block title %}Dashboard{% endblock %}
+            </div>
+            <div>
+                <!-- Add user profile or current date here if needed -->
+            </div>
+        </div>
+
+        <div class="p-8 animate-fade-in relative">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6 space-y-2">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-lg shadow-sm
+                                {% if category == 'error' %} bg-red-100 text-red-700 border border-red-200
+                                {% elif category == 'success' %} bg-green-100 text-green-700 border border-green-200
+                                {% else %} bg-blue-100 text-blue-700 border border-blue-200 {% endif %}
+                            ">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+        
+    </main>
+
+</body>
+</html>

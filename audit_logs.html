@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Audit Logs{% endblock %}
+{% block header_title %}System Audit Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Recent Admin Actions</h2>
+    </div>
+    
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Admin User</th>
+                    <th>Action</th>
+                    <th>Target Resource</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>#{{ log.id }}</td>
+                    <td><strong>{{ log.admin.username }}</strong></td>
+                    <td>{{ log.action }}</td>
+                    <td>
+                        {% if log.target_type %}
+                            <span class="badge badge-primary">{{ log.target_type }} #{{ log.target_id }}</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td style="color: var(--text-muted); font-size: 0.85rem;">
+                        {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                        No audit logs available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
