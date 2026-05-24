@@ -1,0 +1,10 @@
+flask
+flask-login
+flask-sqlalchemy
+gunicorn
+setuptools
+wheel
+numpy
+pandas
+scikit-learn
+joblib

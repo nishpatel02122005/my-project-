@@ -1,0 +1,119 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Prediction Records{% endblock %}
+{% block header_title %}Prediction Records{% endblock %}
+
+{% block extra_css %}
+<style>
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        align-items: center;
+    }
+    .filters {
+        display: flex;
+        gap: 10px;
+    }
+    .filter-select {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="toolbar">
+        <div class="filters">
+            <select id="resultFilter" class="filter-select" onchange="filterTable()">
+                <option value="all">All Results</option>
+                <option value="diabetic">Diabetic Only</option>
+                <option value="non-diabetic">Non-Diabetic Only</option>
+            </select>
+            <input type="text" id="userFilter" class="filter-select" placeholder="Filter by User..." onkeyup="filterTable()">
+        </div>
+        <a href="{{ url_for('export_predictions') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-download"></i> Export CSV
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table id="predictionsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Health Metrics (Age/BMI/Glu/BP)</th>
+                    <th>Probability</th>
+                    <th>Result</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in predictions %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td><strong>{{ p.user.username }}</strong></td>
+                    <td>{{ p.age|int }}y / {{ "%.1f"|format(p.bmi) }} / {{ p.glucose|int }} / {{ p.blood_pressure|int }}</td>
+                    <td>{{ "%.1f"|format(p.probability_positive * 100) }}%</td>
+                    <td class="result-cell">
+                        {% if p.result_class == 1 %}
+                            <span class="badge badge-danger">Diabetic</span>
+                        {% else %}
+                            <span class="badge badge-success">Non-Diabetic</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ p.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        {% if current_user.admin_role == 'superadmin' %}
+                        <form action="{{ url_for('delete_prediction', pred_id=p.id) }}" method="POST" onsubmit="return confirm('Delete this record forever?');">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterTable() {
+        let resultFilter = document.getElementById('resultFilter').value.toLowerCase();
+        let userFilter = document.getElementById('userFilter').value.toLowerCase();
+        let table = document.getElementById('predictionsTable');
+        let tr = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < tr.length; i++) {
+            let userTd = tr[i].getElementsByTagName('td')[1];
+            let resultTd = tr[i].getElementsByTagName('td')[4];
+            
+            if (userTd && resultTd) {
+                let userName = userTd.textContent || userTd.innerText;
+                let resultText = resultTd.textContent || resultTd.innerText;
+                
+                userName = userName.toLowerCase();
+                resultText = resultText.toLowerCase();
+
+                let matchesResult = resultFilter === 'all' || resultText.includes(resultFilter);
+                let matchesUser = userName.includes(userFilter);
+
+                if (matchesResult && matchesUser) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

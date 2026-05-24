@@ -1,0 +1,231 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Dashboard Overview{% endblock %}
+{% block header_title %}Overview{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-right: 20px;
+    }
+
+    .icon-users { background: rgba(67, 97, 238, 0.1); color: var(--primary); }
+    .icon-preds { background: rgba(76, 201, 240, 0.1); color: var(--secondary); }
+    .icon-risk { background: rgba(231, 76, 60, 0.1); color: var(--danger); }
+    .icon-today { background: rgba(46, 204, 113, 0.1); color: var(--success); }
+
+    .stat-details h3 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 5px;
+    }
+
+    .stat-details p {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .dashboard-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 25px;
+    }
+
+    @media (max-width: 992px) {
+        .dashboard-content {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-users">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-details">
+            <h3>{{ total_users }}</h3>
+            <p>Total Users</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon icon-preds">
+            <i class="fas fa-microscope"></i>
+        </div>
+        <div class="stat-details">
+            <h3>{{ total_predictions }}</h3>
+            <p>Total Predictions</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon icon-risk">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="stat-details">
+            <h3>{{ high_risk_count }}</h3>
+            <p>High Risk Results</p>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon icon-today">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+        <div class="stat-details">
+            <h3>{{ todays_activity }}</h3>
+            <p>Today's Activity</p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-content">
+    <!-- Recent Predictions Feed -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Recent Predictions Feed</h2>
+            <a href="{{ url_for('admin_predictions') }}" class="btn btn-outline btn-sm">View All</a>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Age/BMI</th>
+                        <th>Probability</th>
+                        <th>Result</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in predictions %}
+                    <tr>
+                        <td>
+                            <strong>{{ p.user.username }}</strong>
+                        </td>
+                        <td>{{ p.age|int }} / {{ "%.1f"|format(p.bmi) }}</td>
+                        <td>{{ "%.1f"|format(p.probability_positive * 100) }}%</td>
+                        <td>
+                            {% if p.result_class == 1 %}
+                                <span class="badge badge-danger">Diabetic</span>
+                            {% else %}
+                                <span class="badge badge-success">Non-Diabetic</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">
+                            {{ p.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                            No predictions found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Risk Level Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Risk Level Breakdown</h2>
+        </div>
+        <div class="chart-container">
+            <canvas id="riskChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('riskChart').getContext('2d');
+    const riskData = {{ risk_dist | tojson }};
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Low Risk (<33%)', 'Medium Risk (33-66%)', 'High Risk (>66%)'],
+            datasets: [{
+                data: riskData,
+                backgroundColor: [
+                    '#2ecc71', // Success green
+                    '#f1c40f', // Warning yellow
+                    '#e74c3c'  // Danger red
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        font: {
+                            family: "'Inter', sans-serif",
+                            size: 12
+                        }
+                    }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+});
+</script>
+{% endblock %}

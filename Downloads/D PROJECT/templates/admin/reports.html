@@ -1,0 +1,149 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}Reports & Analytics{% endblock %}
+{% block header_title %}Reports & Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+    
+    @media (max-width: 992px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .chart-box {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .metric-card {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        padding: 20px;
+        border-radius: var(--border-radius);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .metric-card h4 {
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.9;
+        margin-bottom: 10px;
+    }
+    
+    .metric-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Key Health Metric Averages</h2>
+    </div>
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <h4>Average Glucose</h4>
+            <div class="value">{{ "%.1f"|format(avg_glucose) }}</div>
+        </div>
+        <div class="metric-card" style="background: linear-gradient(135deg, var(--secondary), #00b4d8);">
+            <h4>Average BMI</h4>
+            <div class="value">{{ "%.1f"|format(avg_bmi) }}</div>
+        </div>
+        <div class="metric-card" style="background: linear-gradient(135deg, var(--warning), #f39c12);">
+            <h4>Average Age</h4>
+            <div class="value">{{ "%.1f"|format(avg_age) }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Diabetic vs Non-Diabetic Ratio</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="ratioChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Prediction Trend (Mock)</h2>
+        </div>
+        <div class="chart-box">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ratio Chart
+    const ratioCtx = document.getElementById('ratioChart').getContext('2d');
+    new Chart(ratioCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Diabetic', 'Non-Diabetic'],
+            datasets: [{
+                data: [{{ diabetic }}, {{ non_diabetic }}],
+                backgroundColor: ['#e74c3c', '#2ecc71'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+    
+    // Trend Chart (Mock Data)
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Predictions Made',
+                data: [5, 8, 12, 7, 15, 20, 18],
+                borderColor: '#4361ee',
+                backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
