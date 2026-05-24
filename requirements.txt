@@ -1,7 +1,10 @@
-setuptools==68.0.0
+flask
+flask-login
+flask-sqlalchemy
+gunicorn
+setuptools
 wheel
-flask==2.2.5
-numpy==1.23.5
-pandas==1.5.3
-scikit-learn==1.2.2
-gunicorn==20.1.0
+numpy
+pandas
+scikit-learn
+joblib
