@@ -1,88 +1,145 @@
-{% extends 'admin/base_admin.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
 
-{% block title %}User Management{% endblock %}
-{% block header_title %}User Management{% endblock %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f4f4f4;
+        }
 
-{% block extra_css %}
-<style>
-    .toolbar {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        align-items: center;
-    }
-    .search-box {
-        padding: 8px 15px;
-        border: 1px solid #ddd;
-        border-radius: 20px;
-        width: 300px;
-        font-size: 0.9rem;
-    }
-    .search-box:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-</style>
-{% endblock %}
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
 
-{% block content %}
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .search-box {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            width: 300px;
+            font-size: 0.9rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .badge-success {
+            background: green;
+        }
+
+        .badge-danger {
+            background: red;
+        }
+
+        .badge-primary {
+            background: blue;
+        }
+
+        .btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            background: red;
+        }
+
+        .btn-primary {
+            background: blue;
+        }
+    </style>
+</head>
+
+<body>
+
 <div class="card">
-    <div class="toolbar">
-        <input type="text" id="searchInput" class="search-box" placeholder="Search users by name..." onkeyup="filterUsers()">
-    </div>
-    
-    <div class="table-responsive">
-        <table id="usersTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Join Date</th>
-                    <th>Predictions</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for u in users %}
-                <tr>
-                    <td>{{ u.id }}</td>
-                    <td><strong>{{ u.username }}</strong></td>
-                    <td>
-                        <span class="badge {% if u.admin_role == 'superadmin' %}badge-danger{% elif u.admin_role == 'viewer' %}badge-primary{% else %}badge-success{% endif %}">
-                            {{ u.admin_role|capitalize }}
-                        </span>
-                    </td>
-                    <td>
-                        {% if u.status == 'active' %}
-                            <span class="badge badge-success">Active</span>
-                        {% else %}
-                            <span class="badge badge-danger">Suspended</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ u.join_date.strftime('%Y-%m-%d') if u.join_date else 'N/A' }}</td>
-                    <td>{{ u.predictions | length }}</td>
-                    <td>
-                        <div style="display: flex; gap: 5px;">
-                            {% if current_user.admin_role == 'superadmin' and u.id != current_user.id %}
-                            <form action="{{ url_for('toggle_user_status', user_id=u.id) }}" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-sm {% if u.status == 'active' %}btn-danger{% else %}btn-primary{% endif %}">
-                                    {% if u.status == 'active' %}Suspend{% else %}Activate{% endif %}
-                                </button>
-                            </form>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
+    <div class="toolbar">
+        <input type="text" id="searchInput" class="search-box"
+               placeholder="Search users by name..."
+               onkeyup="filterUsers()">
+    </div>
+
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Join Date</th>
+                <th>Predictions</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr>
+                <td>1</td>
+                <td><strong>Nirav</strong></td>
+                <td><span class="badge badge-danger">Superadmin</span></td>
+                <td><span class="badge badge-success">Active</span></td>
+                <td>2026-05-23</td>
+                <td>12</td>
+                <td>
+                    <button class="btn btn-danger">Suspend</button>
+                </td>
+            </tr>
+
+            <tr>
+                <td>2</td>
+                <td><strong>AdminUser</strong></td>
+                <td><span class="badge badge-primary">Viewer</span></td>
+                <td><span class="badge badge-danger">Suspended</span></td>
+                <td>2026-05-20</td>
+                <td>5</td>
+                <td>
+                    <button class="btn btn-primary">Activate</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+
 <script>
     function filterUsers() {
         let input = document.getElementById('searchInput');
@@ -91,9 +148,11 @@
         let tr = table.getElementsByTagName('tr');
 
         for (let i = 1; i < tr.length; i++) {
-            let td = tr[i].getElementsByTagName('td')[1]; // Username column
+            let td = tr[i].getElementsByTagName('td')[1];
+
             if (td) {
                 let txtValue = td.textContent || td.innerText;
+
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {
                     tr[i].style.display = "";
                 } else {
@@ -103,4 +162,6 @@
         }
     }
 </script>
-{% endblock %}
+
+</body>
+</html>
